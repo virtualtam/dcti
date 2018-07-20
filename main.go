@@ -2,10 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
-	"text/template"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -36,35 +33,6 @@ func printContainerInfo(container types.Container) {
 	}
 }
 
-func renderTpl(writer *tabwriter.Writer, templateString string, data interface{}) {
-	tpl := template.New("tpl")
-	tpl.Parse(templateString)
-	tpl.Execute(writer, data)
-	writer.Flush()
-}
-
-func printTpl(container types.Container) {
-	const (
-		info = "Names\tImage\n" +
-			"{{range $n := .Names}}{{$n}}{{end}}\t{{.Image}}\n\n"
-		net = "Gateway\tIP\tMAC\n" +
-			"{{range .Networks}}" +
-			"{{.Gateway}}\t{{.IPAddress}}\t{{.MacAddress}}" +
-			"{{end}}\n\n"
-		mount = "Type\tName\tSource\tMode\n" +
-			"{{range .Mounts}}" +
-			"{{.Type}}\t{{.Name}}\t{{.Source}}\t{{.Mode}}" +
-			"{{end}}\n"
-	)
-	writer := tabwriter.NewWriter(os.Stdout, 8, 8, 8, ' ', 0)
-
-	fmt.Println("===", strings.TrimLeft(container.Names[0], "/"), "===")
-
-	renderTpl(writer, info, container)
-	renderTpl(writer, net, container.NetworkSettings)
-	renderTpl(writer, mount, container)
-}
-
 func main() {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts()
@@ -80,7 +48,6 @@ func main() {
 
 	for _, container := range containers {
 		printContainerInfo(container)
-		printTpl(container)
 		fmt.Println()
 	}
 }
