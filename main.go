@@ -55,7 +55,7 @@ func main() {
 	}
 	cli.NegotiateAPIVersion(ctx)
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
 	if err != nil {
 		panic(err)
 	}
