@@ -24,20 +24,26 @@ func init() {
 
 func printContainerInfo(container types.Container) {
 	fmt.Println("===", strings.TrimLeft(container.Names[0], "/"), "===")
-	fmt.Println("Image:", container.Image)
+	fmt.Println("Image: ", container.Image)
+	fmt.Println("State: ", container.State)
+	fmt.Println("Status:", container.Status)
 
-	for endpoint, settings := range container.NetworkSettings.Networks {
-		fmt.Printf("\nNetwork '%s':\n", endpoint)
-		fmt.Println("  Gateway:", settings.Gateway)
-		fmt.Println("  Address:", settings.IPAddress)
-		fmt.Println("  MAC:    ", settings.MacAddress)
+	if len(container.NetworkSettings.Networks) > 0 {
+		fmt.Println("\nNetworks:")
+		for endpoint, settings := range container.NetworkSettings.Networks {
+			fmt.Printf("  %s:\n", endpoint)
+			fmt.Println("    Gateway:", settings.Gateway)
+			fmt.Println("    Address:", settings.IPAddress)
+			fmt.Println("    MAC:    ", settings.MacAddress)
+		}
 	}
 
 	if len(container.Mounts) > 0 {
 		fmt.Println("\nMounts:")
 		for _, mount := range container.Mounts {
 			fmt.Printf("  %s:\n", mount.Destination)
-			fmt.Println("    Type:  ", mount.Type)
+			//fmt.Println("    Type:  ", mount.Type)
+			//fmt.Println("    Driver:", mount.Driver)
 			fmt.Println("    Name:  ", mount.Name)
 			fmt.Println("    Source:", mount.Source)
 			fmt.Println("    Mode:  ", mount.Mode)
