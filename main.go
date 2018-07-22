@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -9,6 +11,16 @@ import (
 
 	"golang.org/x/net/context"
 )
+
+var (
+	containerId string
+)
+
+func init() {
+	flag.StringVar(&containerId, "-filter", "", "Filter containers by name")
+	flag.StringVar(&containerId, "f", "", "Filter containers by name")
+	flag.Parse()
+}
 
 func printContainerInfo(container types.Container) {
 	fmt.Println("===", strings.TrimLeft(container.Names[0], "/"), "===")
@@ -31,6 +43,8 @@ func printContainerInfo(container types.Container) {
 			fmt.Println("    Mode:  ", mount.Mode)
 		}
 	}
+
+	fmt.Println()
 }
 
 func main() {
@@ -46,8 +60,26 @@ func main() {
 		panic(err)
 	}
 
-	for _, container := range containers {
-		printContainerInfo(container)
-		fmt.Println()
+	sort.Slice(containers, func(i, j int) bool {
+		return containers[i].Names[0] < containers[j].Names[0]
+	})
+
+	if containerId == "" {
+		for _, container := range containers {
+			printContainerInfo(container)
+		}
+	} else {
+		var found int
+
+		for _, container := range containers {
+			if strings.Contains(container.Names[0], containerId) {
+				found++
+				printContainerInfo(container)
+			}
+		}
+
+		if found == 0 {
+			fmt.Println("No containers found for pattern: ", containerId)
+		}
 	}
 }
